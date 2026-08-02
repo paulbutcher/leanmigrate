@@ -7,6 +7,9 @@ RUN apt-get update && \
         build-essential \
         cmake \
         lsb-release \
+        postgresql-client \
+        libpq-dev \
+        pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 USER vscode

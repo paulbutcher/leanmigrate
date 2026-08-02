@@ -1,6 +1,0 @@
-name = "leanmigrate"
-version = "0.1.0"
-defaultTargets = ["Leanmigrate"]
-
-[[lean_lib]]
-name = "Leanmigrate"
