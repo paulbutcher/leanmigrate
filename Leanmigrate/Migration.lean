@@ -15,7 +15,7 @@ structure Migration where
 deriving Repr, BEq
 
 private def stripSuffix (s suffix : String) : Option String :=
-  if s.endsWith suffix then some (s.dropRight suffix.length) else none
+  if s.endsWith suffix then some (s.dropEnd suffix.length).toString else none
 
 /-- Parses a filename of the form `<digits>_<name>.up.sql` or `<digits>_<name>.down.sql`,
 returning `(id, name, isUp)`. Any other filename yields `none`. -/

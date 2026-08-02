@@ -12,6 +12,7 @@ Project-specific guidance for Claude Code when working in this repo.
   repo root as the final ground truth.
 - If a change adds or removes an `import`, use `mcp__lean-lsp__lean_build`
   instead of (or in addition to) plain `lake build`.
+- All lean code should compile without warnings.
 
 ## Commenting
 
