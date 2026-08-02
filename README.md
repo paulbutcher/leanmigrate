@@ -26,12 +26,13 @@ one backend never needs to build or link the other.
 ## Running migrations
 
 leanmigrate doesn't ship a standalone binary, since opening the database connection is inherently
-project-specific. Instead, add a small `lean_exe` to your own `lakefile.lean`:
+project-specific. Instead, add a small `lean_exe` to your own `lakefile.toml`:
 
-```lean
-lean_exe migrate where
-  srcDir := "dev"
-  root := `Migrate
+```toml
+[[lean_exe]]
+name = "migrate"
+srcDir = "dev"
+root = "Migrate"
 ```
 
 ```lean
