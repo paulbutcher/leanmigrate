@@ -11,17 +11,25 @@ other backends by implementing a three-method type class.
 
 ## Adding it to your project
 
-In your `lakefile.lean`:
+Require whichever backend you use:
 
-```lean
-require leanmigrate from git "https://github.com/paulbutcher/leanmigrate" @ "<rev>"
-require leansqlite from git "https://github.com/leanprover/leansqlite" @ "<rev>"   -- if using SQLite
-require leanpostgres from git "https://github.com/paulbutcher/leanpostgres" @ "<rev>" -- if using Postgres
+```toml
+# if using SQLite
+[[require]]
+name = "leanmigrateSqlite"
+git = "https://github.com/paulbutcher/leanmigrate"
+rev = "<rev>"
+subDir = "sqlite"
 ```
 
-`leanmigrate`'s core (the `Leanmigrate` library) has no dependency on either database driver.
-`LeanmigrateSqlite` and `LeanmigratePostgres` are separate libraries, so a project that only uses
-one backend never needs to build or link the other.
+```toml
+# if using Postgres
+[[require]]
+name = "leanmigratePostgres"
+git = "https://github.com/paulbutcher/leanmigrate"
+rev = "<rev>"
+subDir = "postgres"
+```
 
 ## Running migrations
 
@@ -93,10 +101,15 @@ class SqlBackend (Conn : Type) where
 `exec` runs a statement, discarding any results. `queryText1` runs a query that returns a single
 text column, one entry per row; it's only ever used internally, to read the `schema_migrations`
 table. `withTransaction` runs an action atomically, rolling back if it throws. See
-`LeanmigrateSqlite/Backend.lean` and `LeanmigratePostgres/Backend.lean` for examples; each is
-under twenty lines.
+`sqlite/LeanmigrateSqlite/Backend.lean` and `postgres/LeanmigratePostgres/Backend.lean` for
+examples; each is under twenty lines.
 
 ## Development
+
+This repo is a Lake workspace over three packages: `core` (`leanmigrate`), `sqlite`
+(`leanmigrateSqlite`) and `postgres` (`leanmigratePostgres`), each with its own `lakefile.lean`
+and `lake-manifest.json`. The root `lakefile.lean` requires all three by path purely so `lake
+build` and `lake test` here exercise everything together; it isn't a package consumers require.
 
 `lake test` runs the pure discovery/ordering tests, then the SQLite scenario tests (against a
 temp-file database), then the Postgres scenario tests (against a live database, in a throwaway

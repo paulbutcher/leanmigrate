@@ -5,41 +5,36 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Lake
 open Lake DSL
 
-package leanmigrate where
+-- This package isn't published; it's the local workspace that ties the `core`, `sqlite` and
+-- `postgres` packages together for development and integration testing. Consumers require
+-- those packages directly (see README.md), so that a project using only one backend never
+-- fetches the other backend's driver.
+package leanmigrateWorkspace where
   version := v!"0.1.0"
 
--- Closest tagged release to our v4.32.2 toolchain that still builds cleanly.
--- `main` is on v4.33.0-rc1, which needs a newer toolchain than ours.
-require leansqlite from git
-  "https://github.com/leanprover/leansqlite" @ "b2e8105c3507d81adaa531fda5990d14b631528f"
+require leanmigrate from "core"
 
--- Closest tagged release to our v4.32.2 toolchain; also predates the `plausible`
--- dependency added to `main`, which we don't need.
-require leanpostgres from git
-  "https://github.com/paulbutcher/leanpostgres" @ "b9442f8df6227a5e472b309ed1b77fe699968a17"
+require leanmigrateSqlite from "sqlite"
+
+require leanmigratePostgres from "postgres"
 
 @[default_target]
-lean_lib Leanmigrate
-
-lean_lib LeanmigrateSqlite
-
-lean_lib LeanmigratePostgres
-
-lean_lib LeanmigrateTest
-
 lean_exe MigrationTests where
   srcDir := "tests"
   root := `MigrationTests
 
+@[default_target]
 lean_exe SqliteTests where
   srcDir := "tests"
   root := `SqliteTests
 
+@[default_target]
 lean_exe PostgresTests where
   srcDir := "tests"
   root := `PostgresTests
 
 -- Dogfoods the exact wiring documented for consumers in the README.
+@[default_target]
 lean_exe «migrate-sqlite» where
   srcDir := "dev"
   root := `MigrateSqlite
