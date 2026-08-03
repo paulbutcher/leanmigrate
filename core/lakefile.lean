@@ -6,7 +6,7 @@ import Lake
 open Lake DSL
 
 package leanmigrate where
-  version := v!"0.1.0"
+  version := v!"0.2.0"
 
 @[default_target]
 lean_lib Leanmigrate
