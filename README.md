@@ -82,11 +82,6 @@ table in a single transaction, so a migration that fails is never left half-appl
 run in ascending id order; a run stops at the first failure, leaving everything before it applied
 and everything from it onward untouched.
 
-**Postgres migration files must contain a single SQL statement.** leanpostgres executes SQL via
-libpq's `PQexecParams`, which rejects `;`-separated multi-statement text outright rather than
-running the statements in sequence. If you need several statements, split them into several
-migration files instead. SQLite has no such restriction.
-
 ## Supporting another backend
 
 Implement `SqlBackend` for your connection type:
