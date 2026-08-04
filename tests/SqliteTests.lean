@@ -20,4 +20,5 @@ def main : IO UInt32 := do
   withFreshDb "sqlite-partial-more" scenarioPartialThenMore
   withFreshDb "sqlite-idempotent" scenarioIdempotentRerun
   withFreshDb "sqlite-failure-aborts" scenarioFailureMidBatchAborts
+  withFreshDb "sqlite-multistatement" scenarioMultiStatementFile
   report "SqliteTests"
