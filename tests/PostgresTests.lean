@@ -28,4 +28,5 @@ def main : IO UInt32 := do
   withFreshSchema "pgpartialmore" scenarioPartialThenMore
   withFreshSchema "pgidempotent" scenarioIdempotentRerun
   withFreshSchema "pgfailureaborts" scenarioFailureMidBatchAborts
+  withFreshSchema "pgmultistatement" scenarioMultiStatementFile
   report "PostgresTests"

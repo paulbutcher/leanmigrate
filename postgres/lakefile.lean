@@ -7,10 +7,10 @@ open Lake DSL
 
 require leanmigrate from ".." / "core"
 
--- Closest tagged release to our v4.32.2 toolchain; also predates the `plausible`
--- dependency added to `main`, which we don't need.
+-- First revision providing `Postgres.execScript`, which `exec` needs to run multi-statement
+-- migration files.
 require leanpostgres from git
-  "https://github.com/paulbutcher/leanpostgres" @ "b9442f8df6227a5e472b309ed1b77fe699968a17"
+  "https://github.com/paulbutcher/leanpostgres" @ "f7b8f7c26e80203ba0476e4a4322e0c545545def"
 
 package leanmigratePostgres where
   version := v!"0.3.0"
