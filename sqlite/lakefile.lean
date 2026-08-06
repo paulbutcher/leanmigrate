@@ -13,7 +13,7 @@ require leansqlite from git
   "https://github.com/leanprover/leansqlite" @ "b2e8105c3507d81adaa531fda5990d14b631528f"
 
 package leanmigrateSqlite where
-  version := v!"0.3.0"
+  version := v!"0.3.1"
 
 @[default_target]
 lean_lib LeanmigrateSqlite
