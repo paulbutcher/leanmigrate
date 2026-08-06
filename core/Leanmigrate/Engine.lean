@@ -8,7 +8,7 @@ import Leanmigrate.Migration
 /-- Creates the bookkeeping table if it doesn't already exist. This SQL is portable across
 every backend we support, so it lives here once rather than in each adapter. -/
 def ensureMigrationsTable [SqlBackend Conn] (conn : Conn) : IO Unit :=
-  SqlBackend.exec conn
+  SqlBackend.execQuiet conn
     "CREATE TABLE IF NOT EXISTS schema_migrations (id TEXT PRIMARY KEY, applied_at TEXT NOT NULL)"
 
 /-- Ids already recorded as applied, ascending. Ensures the bookkeeping table exists first, so
