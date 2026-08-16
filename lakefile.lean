@@ -18,36 +18,14 @@ require leanmigrateSqlite from "sqlite"
 
 require leanmigratePostgres from "postgres"
 
-@[default_target]
-lean_exe MigrationTests where
-  srcDir := "tests"
-  root := `MigrationTests
-
-@[default_target]
-lean_exe SqliteTests where
-  srcDir := "tests"
-  root := `SqliteTests
-
-@[default_target]
-lean_exe PostgresTests where
-  srcDir := "tests"
-  root := `PostgresTests
-
 -- Dogfoods the exact wiring documented for consumers in the README.
 @[default_target]
 lean_exe «migrate-sqlite» where
   srcDir := "dev"
   root := `MigrateSqlite
 
-/-- Runs each test executable as its own process (rather than importing their `main`s here)
-so `lake exe SqliteTests`, for instance, stays runnable on its own, e.g. in an environment with
-no Postgres available. -/
 @[test_driver]
 script test (_args) do
-  let mut code : UInt32 := 0
-  for exe in #["MigrationTests", "SqliteTests", "PostgresTests"] do
-    let child ← IO.Process.spawn { cmd := "lake", args := #["exe", exe] }
-    let exitCode ← child.wait
-    if exitCode != 0 then code := exitCode
-  return code
-
+  let child ← IO.Process.spawn
+    { cmd := "lake", args := #["test"], cwd := __dir__ / "test" }
+  child.wait

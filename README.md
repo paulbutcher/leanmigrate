@@ -101,11 +101,15 @@ examples; each is under twenty lines.
 
 ## Development
 
-This repo is a Lake workspace over three packages: `core` (`leanmigrate`), `sqlite`
-(`leanmigrateSqlite`) and `postgres` (`leanmigratePostgres`), each with its own `lakefile.lean`
-and `lake-manifest.json`. The root `lakefile.lean` requires all three by path purely so `lake
-build` and `lake test` here exercise everything together; it isn't a package consumers require.
+This repo is a Lake workspace over four packages, each with its own `lakefile.lean` and
+`lake-manifest.json`: `core` (`leanmigrate`), `sqlite` (`leanmigrateSqlite`), `postgres`
+(`leanmigratePostgres`), and `test`. The root `lakefile.lean` requires the first three by path
+purely so `lake build` here exercises everything together; it isn't a package consumers require.
 
-`lake test` runs the pure discovery/ordering tests, then the SQLite scenario tests (against a
-temp-file database), then the Postgres scenario tests (against a live database, in a throwaway
-schema per test; see `PG*` environment variables for how the connection is configured).
+The tests are their own package rather than targets in the three above, so that a project
+depending on leanmigrate resolves neither the test code nor the tools it needs. `lake test` at
+the root delegates to it, running the pure discovery/ordering tests, then the SQLite scenario
+tests (against a temp-file database), then the Postgres scenario tests (against a live database,
+in a throwaway schema per test; see `PG*` environment variables for how the connection is
+configured). The theorems in `test/LeanmigrateTest/Theorems.lean` have no runner: they pass by
+compiling.

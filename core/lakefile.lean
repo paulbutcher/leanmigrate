@@ -10,5 +10,3 @@ package leanmigrate where
 
 @[default_target]
 lean_lib Leanmigrate
-
-lean_lib LeanmigrateTest

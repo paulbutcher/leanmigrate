@@ -1,42 +1,23 @@
-{
-	"version": "1.2.0",
-	"packagesDir": ".lake/packages",
-	"packages": [
-		{
-			"url": "https://github.com/paulbutcher/leanpostgres",
-			"type": "git",
-			"subDir": null,
-			"scope": "",
-			"rev": "f7b8f7c26e80203ba0476e4a4322e0c545545def",
-			"name": "leanpostgres",
-			"manifestFile": "lake-manifest.json",
-			"inputRev": "f7b8f7c26e80203ba0476e4a4322e0c545545def",
-			"inherited": false,
-			"configFile": "lakefile.lean"
-		},
-		{
-			"type": "path",
-			"scope": "",
-			"name": "leanmigrate",
-			"manifestFile": "lake-manifest.json",
-			"inherited": false,
-			"dir": "../core",
-			"configFile": "lakefile.lean"
-		},
-		{
-			"url": "https://github.com/leanprover-community/plausible",
-			"type": "git",
-			"subDir": null,
-			"scope": "",
-			"rev": "e12c1910fe855cbfc38803cd4e55543906d5fa62",
-			"name": "plausible",
-			"manifestFile": "lake-manifest.json",
-			"inputRev": "v4.32.0",
-			"inherited": true,
-			"configFile": "lakefile.toml"
-		}
-	],
-	"name": "leanmigratePostgres",
-	"lakeDir": ".lake",
-	"fixedToolchain": false
-}
+{"version": "1.2.0",
+ "packagesDir": ".lake/packages",
+ "packages":
+ [{"url": "https://github.com/paulbutcher/leanpostgres",
+   "type": "git",
+   "subDir": null,
+   "scope": "",
+   "rev": "8c7f9541736993d7a853278b79c08372a85ec150",
+   "name": "leanpostgres",
+   "manifestFile": "lake-manifest.json",
+   "inputRev": "v0.4.1",
+   "inherited": false,
+   "configFile": "lakefile.lean"},
+  {"type": "path",
+   "scope": "",
+   "name": "leanmigrate",
+   "manifestFile": "lake-manifest.json",
+   "inherited": false,
+   "dir": "../core",
+   "configFile": "lakefile.lean"}],
+ "name": "leanmigratePostgres",
+ "lakeDir": ".lake",
+ "fixedToolchain": false}

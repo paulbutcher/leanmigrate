@@ -7,10 +7,8 @@ open Lake DSL
 
 require leanmigrate from ".." / "core"
 
--- First revision providing `Postgres.execScript`, which `exec` needs to run multi-statement
--- migration files.
 require leanpostgres from git
-  "https://github.com/paulbutcher/leanpostgres" @ "f7b8f7c26e80203ba0476e4a4322e0c545545def"
+  "https://github.com/paulbutcher/leanpostgres" @ "v0.4.1"
 
 package leanmigratePostgres where
   version := v!"0.3.1"

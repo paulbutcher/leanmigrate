@@ -19,7 +19,7 @@ private def stripSuffix (s suffix : String) : Option String :=
 
 /-- Parses a filename of the form `<digits>_<name>.up.sql` or `<digits>_<name>.down.sql`,
 returning `(id, name, isUp)`. Any other filename yields `none`. -/
-private def parseMigrationFilename (fname : String) : Option (String × String × Bool) :=
+def parseMigrationFilename (fname : String) : Option (String × String × Bool) :=
   let stem? := (stripSuffix fname ".up.sql").map (·, true)
     |>.orElse fun _ => (stripSuffix fname ".down.sql").map (·, false)
   stem?.bind fun (stem, isUp) =>
@@ -50,7 +50,7 @@ def discoverMigrations (dir : System.FilePath) : IO (Array Migration) := do
     | none => throw <| IO.userError s!"migration {id}_{name}.up.sql has no matching down.sql"
   return result.qsort (·.id < ·.id)
 
-private def pad (width : Nat) (n : Int) : String :=
+def pad (width : Nat) (n : Int) : String :=
   String.ofList (List.leftpad width '0' (toString n.toNat).toList)
 
 private def currentUtc : IO Std.Time.PlainDateTime :=
