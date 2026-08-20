@@ -8,10 +8,11 @@ open Lake DSL
 require leanmigrate from ".." / "core"
 
 require leanpostgres from git
-  "https://github.com/paulbutcher/leanpostgres" @ "v0.4.1"
+  "https://github.com/paulbutcher/leanpostgres" @ "v0.6.0"
 
 package leanmigratePostgres where
-  version := v!"0.4.0"
+  version := v!"0.5.0"
+  leanOptions := #[⟨`experimental.module, true⟩]
 
 @[default_target]
 lean_lib LeanmigratePostgres

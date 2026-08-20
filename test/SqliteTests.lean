@@ -2,6 +2,7 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+module
 import LeanmigrateTest
 import LeanmigrateSqlite
 
@@ -14,7 +15,7 @@ private def withFreshDb (label : String) (action : SQLite â†’ System.FilePath â†
   action conn dir
   IO.FS.removeDirAll dir
 
-def main : IO UInt32 := do
+public def main : IO UInt32 := do
   withFreshDb "sqlite-clean-apply" scenarioCleanApply
   withFreshDb "sqlite-apply-rollback" scenarioApplyThenRollback
   withFreshDb "sqlite-partial-more" scenarioPartialThenMore

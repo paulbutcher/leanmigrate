@@ -2,6 +2,7 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+module
 import LeanmigrateTest
 import LeanmigratePostgres
 
@@ -22,7 +23,7 @@ private def withFreshSchema (label : String) (action : Postgres.Conn → System.
     SqlBackend.exec conn s!"DROP SCHEMA {schema} CASCADE"
     IO.FS.removeDirAll dir
 
-def main : IO UInt32 := do
+public def main : IO UInt32 := do
   withFreshSchema "pgcleanapply" scenarioCleanApply
   withFreshSchema "pgapplyrollback" scenarioApplyThenRollback
   withFreshSchema "pgpartialmore" scenarioPartialThenMore

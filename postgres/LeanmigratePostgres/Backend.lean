@@ -2,10 +2,11 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Leanmigrate.SqlBackend
-import Postgres
+module
+public import Leanmigrate.SqlBackend
+public import Postgres
 
-instance : SqlBackend Postgres.Conn where
+public instance : SqlBackend Postgres.Conn where
   exec db sql := Postgres.execScript db sql
   -- Postgres reports `CREATE TABLE IF NOT EXISTS` on an existing relation as a NOTICE, which
   -- the server would otherwise send to the client on every run, not just the first. `SET

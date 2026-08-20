@@ -2,8 +2,9 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Leanmigrate
-import LeanmigrateTest.Framework
+module
+public import Leanmigrate
+public import LeanmigrateTest.Framework
 
 /-- Writes one migration per id in `ids` under `dir`, each creating/dropping its own
 uniquely-named table. Ids should be distinct, fixed-width, all-digit strings so lexicographic
@@ -39,7 +40,8 @@ private def tableExists [SqlBackend Conn] (conn : Conn) (table : String) : IO Bo
 
 /-- Applying a batch of pending migrations from a clean database applies all of them, in
 ascending id order. -/
-def scenarioCleanApply [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) : IO Unit := do
+public def scenarioCleanApply [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
+    IO Unit := do
   let all ← writeMigrations dir #["00000001", "00000002", "00000003"]
   migrateUp conn all
   let applied ← appliedIds conn
@@ -48,7 +50,7 @@ def scenarioCleanApply [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
 
 /-- Rolling back with no target undoes exactly the single most-recently-applied migration,
 running its `down.sql` and removing its bookkeeping row, leaving earlier migrations untouched. -/
-def scenarioApplyThenRollback [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
+public def scenarioApplyThenRollback [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
     IO Unit := do
   let all ← writeMigrations dir #["00000001", "00000002"]
   migrateUp conn all
@@ -60,7 +62,7 @@ def scenarioApplyThenRollback [SqlBackend Conn] (conn : Conn) (dir : System.File
 
 /-- Applying up to a target id, then discovering newly-added migrations and applying again
 with no target, applies only what's still pending. -/
-def scenarioPartialThenMore [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
+public def scenarioPartialThenMore [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
     IO Unit := do
   let initial ← writeMigrations dir #["00000001", "00000002"]
   migrateUp conn initial (target? := some "00000001")
@@ -73,7 +75,7 @@ def scenarioPartialThenMore [SqlBackend Conn] (conn : Conn) (dir : System.FilePa
 
 /-- Applying the same batch twice is a no-op the second time: already-applied migrations are
 never re-run. -/
-def scenarioIdempotentRerun [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
+public def scenarioIdempotentRerun [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
     IO Unit := do
   let all ← writeMigrations dir #["00000001"]
   migrateUp conn all
@@ -83,7 +85,7 @@ def scenarioIdempotentRerun [SqlBackend Conn] (conn : Conn) (dir : System.FilePa
 
 /-- A single migration file may contain several `;`-separated statements, which apply and roll
 back as a unit. -/
-def scenarioMultiStatementFile [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
+public def scenarioMultiStatementFile [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
     IO Unit := do
   IO.FS.createDirAll dir
   IO.FS.writeFile (dir / "00000001_multi.up.sql")
@@ -100,7 +102,7 @@ def scenarioMultiStatementFile [SqlBackend Conn] (conn : Conn) (dir : System.Fil
 
 /-- A failing migration aborts the whole run: migrations before it stay committed, the failing
 one is fully rolled back (no bookkeeping row), and nothing after it ever runs. -/
-def scenarioFailureMidBatchAborts [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
+public def scenarioFailureMidBatchAborts [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
     IO Unit := do
   discard <| writeMigrations dir #["00000001"]
   discard <| writeBadMigration dir "00000002"

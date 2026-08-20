@@ -2,8 +2,9 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Leanmigrate.Config
-import Leanmigrate.Engine
+module
+public import Leanmigrate.Config
+public import Leanmigrate.Engine
 
 private def usage : String :=
   "usage: <command> [args]\n" ++
@@ -33,7 +34,7 @@ private def runRollback [SqlBackend Conn] (conn : Conn) (all : Array Migration)
 /-- Parses `args` and runs the corresponding command against `cfg`, returning a process exit
 code. This is the one place an `IO.Error` is caught; everything below lets errors propagate,
 aborting the run. -/
-def runCli [SqlBackend Conn] (cfg : Config Conn) (args : List String) : IO UInt32 := do
+public def runCli [SqlBackend Conn] (cfg : Config Conn) (args : List String) : IO UInt32 := do
   try
     match args with
     | ["create", name] =>

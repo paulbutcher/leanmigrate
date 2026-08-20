@@ -7,13 +7,13 @@ open Lake DSL
 
 require leanmigrate from ".." / "core"
 
--- Closest tagged release to our v4.32.2 toolchain that still builds cleanly.
--- `main` is on v4.33.0-rc1, which needs a newer toolchain than ours.
+-- Tagged releases track Lean releases; this is the one matching our toolchain.
 require leansqlite from git
-  "https://github.com/leanprover/leansqlite" @ "b2e8105c3507d81adaa531fda5990d14b631528f"
+  "https://github.com/leanprover/leansqlite" @ "v4.33.0"
 
 package leanmigrateSqlite where
-  version := v!"0.4.0"
+  version := v!"0.5.0"
+  leanOptions := #[⟨`experimental.module, true⟩]
 
 @[default_target]
 lean_lib LeanmigrateSqlite

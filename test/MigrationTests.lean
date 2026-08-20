@@ -2,6 +2,7 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+module
 import Leanmigrate
 import LeanmigrateTest.Framework
 
@@ -50,7 +51,7 @@ def testCreateMigration : IO Unit := do
   checkThrows "a name with no valid characters is rejected" (createMigration dir "!!!")
   IO.FS.removeDirAll dir
 
-def main : IO UInt32 := do
+public def main : IO UInt32 := do
   testWellFormedPairsSortedById
   testMissingDownErrors
   testUnrelatedFilesIgnored

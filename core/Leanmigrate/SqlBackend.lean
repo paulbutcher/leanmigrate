@@ -2,12 +2,13 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+module
 
 /-- The minimal set of database operations the migration engine needs. Backend adapters
 (one per underlying driver, e.g. SQLite or Postgres) provide an instance of this class for
 their own connection type, handling that driver's own placeholder syntax and error types
 internally. -/
-class SqlBackend (Conn : Type) where
+public class SqlBackend (Conn : Type) where
   /-- Execute a batch of SQL against `Conn`, discarding any result rows. -/
   exec : Conn → String → IO Unit
   /-- Like `exec`, but for SQL the engine runs itself (as opposed to user-supplied migrations)

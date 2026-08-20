@@ -2,7 +2,8 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Leanmigrate
+module
+import all Leanmigrate.Migration
 
 /-- `Engine.lean` interpolates `Migration.id` directly into the bookkeeping SQL rather than
 binding it as a parameter. Every id it ever sees reached it through `discoverMigrations`, and so

@@ -10,7 +10,8 @@ open Lake DSL
 -- those packages directly (see README.md), so that a project using only one backend never
 -- fetches the other backend's driver.
 package leanmigrateWorkspace where
-  version := v!"0.4.0"
+  version := v!"0.5.0"
+  leanOptions := #[⟨`experimental.module, true⟩]
 
 require leanmigrate from "core"
 

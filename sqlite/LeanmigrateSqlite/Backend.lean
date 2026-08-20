@@ -2,10 +2,11 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Leanmigrate.SqlBackend
-import SQLite
+module
+public import Leanmigrate.SqlBackend
+public import SQLite
 
-instance : SqlBackend SQLite where
+public instance : SqlBackend SQLite where
   exec db sql := db.exec sql
   queryText1 db sql := do
     let stmt ← db.prepare sql
