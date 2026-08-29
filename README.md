@@ -1,13 +1,8 @@
 # leanmigrate
 
-A database migration library for Lean 4, modeled on
-[migratus](https://github.com/yogthos/migratus). Migrations are plain SQL files on disk;
-leanmigrate tracks which have been applied and gives you `create`/`migrate`/`rollback`/`pending`
-commands to manage them.
+A database migration library for Lean 4, modeled on [migratus](https://github.com/yogthos/migratus). Migrations are plain SQL files on disk; leanmigrate tracks which have been applied and gives you `create`/`migrate`/`rollback`/`pending` commands to manage them.
 
-It supports [leansqlite](https://github.com/leanprover/leansqlite) and
-[leanpostgres](https://github.com/paulbutcher/leanpostgres) out of the box, and can be extended to
-other backends by implementing a three-method type class.
+It supports [leansqlite](https://github.com/leanprover/leansqlite) and [leanpostgres](https://github.com/paulbutcher/leanpostgres) out of the box, and can be extended to other backends by implementing a three-method type class.
 
 ## Adding it to your project
 
@@ -33,8 +28,7 @@ subDir = "postgres"
 
 ## Running migrations
 
-leanmigrate doesn't ship a standalone binary, since opening the database connection is inherently
-project-specific. Instead, add a small `lean_exe` to your own `lakefile.toml`:
+leanmigrate doesn't ship a standalone binary, since opening the database connection is inherently project-specific. Instead, add a small `lean_exe` to your own `lakefile.toml`:
 
 ```toml
 [[lean_exe]]
@@ -54,9 +48,7 @@ def main (args : List String) : IO UInt32 := do
   runCli { conn, dir := "migrations" } args
 ```
 
-(swap in `import Postgres`, `import LeanmigratePostgres`, and `Postgres.open ""` for Postgres;
-an empty conninfo string falls back to the standard `PGHOST`/`PGPORT`/`PGUSER`/`PGDATABASE`
-environment variables).
+(swap in `import Postgres`, `import LeanmigratePostgres`, and `Postgres.open ""` for Postgres; an empty conninfo string falls back to the standard `PGHOST`/`PGPORT`/`PGUSER`/`PGDATABASE` environment variables).
 
 Then:
 
@@ -72,15 +64,9 @@ lake exe migrate pending            # lists migrations not yet applied
 
 ## Migration files
 
-`create` writes a pair of empty files under your migrations directory, named
-`<14-digit-UTC-timestamp>_<name>.up.sql` and `..._<name>.down.sql`. Fill in the `up.sql` with the
-change and the `down.sql` with how to undo it. Every `up.sql` must have a matching `down.sql`, or
-`leanmigrate` refuses to run.
+`create` writes a pair of empty files under your migrations directory, named `<14-digit-UTC-timestamp>_<name>.up.sql` and `..._<name>.down.sql`. Fill in the `up.sql` with the change and the `down.sql` with how to undo it. Every `up.sql` must have a matching `down.sql`, or `leanmigrate` refuses to run.
 
-Applying a migration runs its `up.sql` and records its id in a `schema_migrations` bookkeeping
-table in a single transaction, so a migration that fails is never left half-applied. Migrations
-run in ascending id order; a run stops at the first failure, leaving everything before it applied
-and everything from it onward untouched.
+Applying a migration runs its `up.sql` and records its id in a `schema_migrations` bookkeeping table in a single transaction, so a migration that fails is never left half-applied. Migrations run in ascending id order; a run stops at the first failure, leaving everything before it applied and everything from it onward untouched.
 
 ## Supporting another backend
 
@@ -89,27 +75,15 @@ Implement `SqlBackend` for your connection type:
 ```lean
 class SqlBackend (Conn : Type) where
   exec            : Conn → String → IO Unit
+  execQuiet       : Conn → String → IO Unit := exec
   queryText1      : Conn → String → IO (Array String)
   withTransaction : Conn → IO α → IO α
 ```
 
-`exec` runs a statement, discarding any results. `queryText1` runs a query that returns a single
-text column, one entry per row; it's only ever used internally, to read the `schema_migrations`
-table. `withTransaction` runs an action atomically, rolling back if it throws. See
-`sqlite/LeanmigrateSqlite/Backend.lean` and `postgres/LeanmigratePostgres/Backend.lean` for
-examples; each is under twenty lines.
+`exec` runs a statement, discarding any results. `queryText1` runs a query that returns a single text column, one entry per row; it's only ever used internally, to read the `schema_migrations` table. `withTransaction` runs an action atomically, rolling back if it throws. `execQuiet` is `exec` for the engine's own bookkeeping SQL, where a backend that surfaces server notices should suppress them; it defaults to `exec`. See `sqlite/LeanmigrateSqlite/Backend.lean` and `postgres/LeanmigratePostgres/Backend.lean` for examples.
 
 ## Development
 
-This repo is a Lake workspace over four packages, each with its own `lakefile.lean` and
-`lake-manifest.json`: `core` (`leanmigrate`), `sqlite` (`leanmigrateSqlite`), `postgres`
-(`leanmigratePostgres`), and `test`. The root `lakefile.lean` requires the first three by path
-purely so `lake build` here exercises everything together; it isn't a package consumers require.
+This repo is a Lake workspace over four packages, each with its own `lakefile.lean` and `lake-manifest.json`: `core` (`leanmigrate`), `sqlite` (`leanmigrateSqlite`), `postgres` (`leanmigratePostgres`), and `test`. The root `lakefile.lean` requires the first three by path purely so `lake build` here exercises everything together; it isn't a package consumers require.
 
-The tests are their own package rather than targets in the three above, so that a project
-depending on leanmigrate resolves neither the test code nor the tools it needs. `lake test` at
-the root delegates to it, running the pure discovery/ordering tests, then the SQLite scenario
-tests (against a temp-file database), then the Postgres scenario tests (against a live database,
-in a throwaway schema per test; see `PG*` environment variables for how the connection is
-configured). The theorems in `test/LeanmigrateTest/Theorems.lean` have no runner: they pass by
-compiling.
+The tests are their own package rather than targets in the three above, so that a project depending on leanmigrate resolves neither the test code nor the tools it needs. `lake test` at the root delegates to it, running the pure discovery/ordering tests, then the SQLite scenario tests (against a temp-file database), then the Postgres scenario tests (against a live database, in a throwaway schema per test; see `PG*` environment variables for how the connection is configured). The theorems in `test/LeanmigrateTest/Theorems.lean` have no runner: they pass by compiling.

@@ -14,8 +14,8 @@ require leanmigratePostgres from ".." / "postgres"
 -- A package of its own, rather than targets in the packages it tests, so that nothing here
 -- reaches a downstream consumer: neither this code nor the test-only dependencies it pulls in.
 package leanmigrateTest where
-  version := v!"0.5.0"
-  leanOptions := #[⟨`experimental.module, true⟩]
+  version := v!"0.5.1"
+  leanOptions := #[⟨`experimental.module, true⟩, ⟨`warningAsError, true⟩]
 
 @[default_target]
 lean_lib LeanmigrateTest
