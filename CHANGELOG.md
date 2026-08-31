@@ -1,5 +1,10 @@
 # Changelog
 
+
+## [0.5.2] - 2026-08-31
+
+Chore: update dependencies.
+
 ## [0.5.1] - 2026-08-29
 
 The build treats warnings as errors.

@@ -6,7 +6,7 @@ import Lake
 open Lake DSL
 
 package leanmigrate where
-  version := v!"0.5.1"
+  version := v!"0.5.2"
   leanOptions := #[⟨`experimental.module, true⟩, ⟨`warningAsError, true⟩]
 
 @[default_target]

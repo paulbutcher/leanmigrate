@@ -12,7 +12,7 @@ require leansqlite from git
   "https://github.com/leanprover/leansqlite" @ "v4.33.0"
 
 package leanmigrateSqlite where
-  version := v!"0.5.1"
+  version := v!"0.5.2"
   leanOptions := #[⟨`experimental.module, true⟩, ⟨`warningAsError, true⟩]
 
 @[default_target]
