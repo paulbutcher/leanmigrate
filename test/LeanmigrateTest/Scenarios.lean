@@ -6,21 +6,22 @@ module
 public import Leanmigrate
 public import LeanmigrateTest.Framework
 
-/-- Writes one migration per id in `ids` under `dir`, each creating/dropping its own
-uniquely-named table. Ids should be distinct, fixed-width, all-digit strings so lexicographic
-and intended order agree. -/
-private def writeMigrations (dir : System.FilePath) (ids : Array String) :
-    IO (Array Migration) := do
+/-- Writes a migration under `dir` creating and dropping its own uniquely-named table. Its
+`up.sql` is deliberately not idempotent, so anything that runs it twice fails. -/
+private def writeMigration (dir : System.FilePath) (id : String) : IO Migration := do
   IO.FS.createDirAll dir
-  let mut result := #[]
-  for id in ids do
-    let name := s!"widget{id}"
-    let up := dir / s!"{id}_{name}.up.sql"
-    let down := dir / s!"{id}_{name}.down.sql"
-    IO.FS.writeFile up s!"CREATE TABLE widget_{id} (id INTEGER);"
-    IO.FS.writeFile down s!"DROP TABLE widget_{id};"
-    result := result.push { id, name, up, down }
-  return result
+  let name := s!"widget{id}"
+  let up := dir / s!"{id}_{name}.up.sql"
+  let down := dir / s!"{id}_{name}.down.sql"
+  IO.FS.writeFile up s!"CREATE TABLE widget_{id} (id INTEGER);"
+  IO.FS.writeFile down s!"DROP TABLE widget_{id};"
+  return { id, name, up, down }
+
+/-- Ids should be distinct, fixed-width, all-digit strings so lexicographic and intended order
+agree. -/
+private def writeMigrations (dir : System.FilePath) (ids : Array String) :
+    IO (Array Migration) :=
+  ids.mapM (writeMigration dir)
 
 /-- Writes a migration under `dir` whose `up.sql` is invalid, for testing that a failing
 migration aborts the run. -/
@@ -37,6 +38,24 @@ private def tableExists [SqlBackend Conn] (conn : Conn) (table : String) : IO Bo
     discard <| SqlBackend.queryText1 conn s!"SELECT id FROM {table}"
     pure true
   catch _ => pure false
+
+private def mentions (haystack needle : String) : Bool := (haystack.splitOn needle).length > 1
+
+/-- Runs `action` twice at once, each run on a connection of its own, and returns what each
+threw or returned. Both connections are open and waiting before either run starts, so that the
+two overlap rather than one finishing before the other has begun. -/
+private def race (newConn : IO Conn) (action : Conn → IO Unit) :
+    IO (Except IO.Error Unit × Except IO.Error Unit) := do
+  let readyA : IO.Promise Unit ← IO.Promise.new
+  let readyB : IO.Promise Unit ← IO.Promise.new
+  let side (mine other : IO.Promise Unit) : IO Unit := do
+    let conn ← newConn
+    mine.resolve ()
+    discard <| IO.wait other.result?
+    action conn
+  let taskA ← IO.asTask (side readyA readyB) .dedicated
+  let taskB ← IO.asTask (side readyB readyA) .dedicated
+  return (← IO.wait taskA, ← IO.wait taskB)
 
 /-- Applying a batch of pending migrations from a clean database applies all of them, in
 ascending id order. -/
@@ -101,7 +120,8 @@ public def scenarioMultiStatementFile [SqlBackend Conn] (conn : Conn) (dir : Sys
     (!(← tableExists conn "multi_a") && !(← tableExists conn "multi_b"))
 
 /-- A failing migration aborts the whole run: migrations before it stay committed, the failing
-one is fully rolled back (no bookkeeping row), and nothing after it ever runs. -/
+one is fully rolled back (no bookkeeping row), and nothing after it ever runs. Since its id is
+never recorded, `migrateUp` must report the failure rather than mistake it for a lost race. -/
 public def scenarioFailureMidBatchAborts [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
     IO Unit := do
   discard <| writeMigrations dir #["00000001"]
@@ -112,3 +132,32 @@ public def scenarioFailureMidBatchAborts [SqlBackend Conn] (conn : Conn) (dir : 
   let applied ← appliedIds conn
   check "only the migration before the failure is committed" (applied == #["00000001"])
   check "the migration after the failure never ran" !(← tableExists conn "widget_00000003")
+
+/-- Two callers running `migrateUp` at once against one database apply every migration exactly
+once, and both return successfully. -/
+public def scenarioConcurrentUp [SqlBackend Conn] (newConn : IO Conn) (dir : System.FilePath) :
+    IO Unit := do
+  let ids := (Array.range 12).map fun i => pad 8 (i + 1 : Nat)
+  let all ← writeMigrations dir ids
+  let (first, second) ← race newConn (migrateUp · all)
+  for (which, outcome) in #[("first", first), ("second", second)] do
+    match outcome with
+    | .ok _ => check s!"concurrent up: the {which} caller succeeds" true
+    | .error e => check s!"concurrent up: the {which} caller succeeds (threw {e})" false
+  let applied ← appliedIds (← newConn)
+  check "concurrent up: every migration applied exactly once" (applied == ids)
+
+/-- Two callers racing for one migration: the loser fails on the bookkeeping row, before any of
+the migration's own SQL. The error is the only evidence either way, since the loser's
+transaction rolls back whichever statement it died on. -/
+public def scenarioLoserRunsNothing [SqlBackend Conn] (newConn : IO Conn) (dir : System.FilePath) :
+    IO Unit := do
+  let m ← writeMigration dir "00000001"
+  ensureMigrationsTable (← newConn)
+  let (first, second) ← race newConn (applyOne · m)
+  match ([first, second].filterMap fun | .ok _ => none | .error e => some (toString e)) with
+  | [thrown] =>
+    check "racing for one migration: the loser fails on the claim, not on the migration"
+      (mentions thrown "schema_migrations")
+  | errors =>
+    check s!"racing for one migration: exactly one caller loses (errors: {errors})" false

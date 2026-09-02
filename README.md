@@ -66,7 +66,13 @@ lake exe migrate pending            # lists migrations not yet applied
 
 `create` writes a pair of empty files under your migrations directory, named `<14-digit-UTC-timestamp>_<name>.up.sql` and `..._<name>.down.sql`. Fill in the `up.sql` with the change and the `down.sql` with how to undo it. Every `up.sql` must have a matching `down.sql`, or `leanmigrate` refuses to run.
 
-Applying a migration runs its `up.sql` and records its id in a `schema_migrations` bookkeeping table in a single transaction, so a migration that fails is never left half-applied. Migrations run in ascending id order; a run stops at the first failure, leaving everything before it applied and everything from it onward untouched.
+Applying a migration records its id in a `schema_migrations` bookkeeping table and runs its `up.sql`, in a single transaction, so a migration that fails is never left half-applied. Migrations run in ascending id order; a run stops at the first failure, leaving everything before it applied and everything from it onward untouched.
+
+## Concurrency
+
+`migrate` is safe to run from several processes at once against one database, so a deployment with several services needn't arrange for exactly one of them to run it. A migration's bookkeeping row goes in before the migration itself, and its id is the primary key, so it doubles as a claim: concurrent callers between them apply each pending migration exactly once, and one that loses a race waits for the winner and then returns successfully, having run none of the migration.
+
+`rollback` is not: deleting a bookkeeping row claims nothing, so two rollbacks at once would both run the same `down.sql`. Run it from one process at a time.
 
 ## Supporting another backend
 
@@ -80,7 +86,7 @@ class SqlBackend (Conn : Type) where
   withTransaction : Conn → IO α → IO α
 ```
 
-`exec` runs a statement, discarding any results. `queryText1` runs a query that returns a single text column, one entry per row; it's only ever used internally, to read the `schema_migrations` table. `withTransaction` runs an action atomically, rolling back if it throws. `execQuiet` is `exec` for the engine's own bookkeeping SQL, where a backend that surfaces server notices should suppress them; it defaults to `exec`. See `sqlite/LeanmigrateSqlite/Backend.lean` and `postgres/LeanmigratePostgres/Backend.lean` for examples.
+`exec` runs a statement, discarding any results. `queryText1` runs a query that returns a single text column, one entry per row; it's only ever used internally, to read the `schema_migrations` table. `withTransaction` runs an action atomically, rolling back if it throws. `execQuiet` is `exec` for the engine's own bookkeeping SQL, where a backend that surfaces server notices should suppress them; it defaults to `exec`. For concurrent `migrate` to work, a driver that reports a locked database rather than waiting for it must be configured to wait, as the SQLite adapter is with `sqlite3_busy_timeout`. See `sqlite/LeanmigrateSqlite/Backend.lean` and `postgres/LeanmigratePostgres/Backend.lean` for examples.
 
 ## Development
 

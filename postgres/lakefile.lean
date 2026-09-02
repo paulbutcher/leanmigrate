@@ -11,7 +11,7 @@ require leanpostgres from git
   "https://github.com/paulbutcher/leanpostgres" @ "v0.7.2"
 
 package leanmigratePostgres where
-  version := v!"0.5.2"
+  version := v!"0.6.0"
   leanOptions := #[⟨`experimental.module, true⟩, ⟨`warningAsError, true⟩]
 
 @[default_target]

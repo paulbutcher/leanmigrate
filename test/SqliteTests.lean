@@ -7,19 +7,25 @@ import LeanmigrateTest
 import LeanmigrateSqlite
 
 /-- Runs `action` against a fresh SQLite database file and migrations directory, so each
-scenario starts with a clean `schema_migrations` table. -/
-private def withFreshDb (label : String) (action : SQLite → System.FilePath → IO Unit) :
+scenario starts with a clean `schema_migrations` table. `action` is given a way to open
+connections rather than a connection, since a scenario racing two callers needs one each. -/
+private def withFreshDb (label : String) (action : IO SQLite → System.FilePath → IO Unit) :
     IO Unit := do
   let dir ← freshTempDir label
-  let conn ← SQLite.open (dir / "test.db")
-  action conn dir
+  action (SQLite.open (dir / "test.db")) dir
   IO.FS.removeDirAll dir
 
+private def single (scenario : SQLite → System.FilePath → IO Unit) (newConn : IO SQLite)
+    (dir : System.FilePath) : IO Unit := do
+  scenario (← newConn) dir
+
 public def main : IO UInt32 := do
-  withFreshDb "sqlite-clean-apply" scenarioCleanApply
-  withFreshDb "sqlite-apply-rollback" scenarioApplyThenRollback
-  withFreshDb "sqlite-partial-more" scenarioPartialThenMore
-  withFreshDb "sqlite-idempotent" scenarioIdempotentRerun
-  withFreshDb "sqlite-failure-aborts" scenarioFailureMidBatchAborts
-  withFreshDb "sqlite-multistatement" scenarioMultiStatementFile
+  withFreshDb "sqlite-clean-apply" (single scenarioCleanApply)
+  withFreshDb "sqlite-apply-rollback" (single scenarioApplyThenRollback)
+  withFreshDb "sqlite-partial-more" (single scenarioPartialThenMore)
+  withFreshDb "sqlite-idempotent" (single scenarioIdempotentRerun)
+  withFreshDb "sqlite-failure-aborts" (single scenarioFailureMidBatchAborts)
+  withFreshDb "sqlite-multistatement" (single scenarioMultiStatementFile)
+  withFreshDb "sqlite-concurrent" scenarioConcurrentUp
+  withFreshDb "sqlite-loser-runs-nothing" scenarioLoserRunsNothing
   report "SqliteTests"

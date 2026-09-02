@@ -1,6 +1,10 @@
 # Changelog
 
 
+## [0.6.0] - 2026-09-02
+
+`migrate` is safe to run concurrently: a migration is claimed in the bookkeeping table before it is applied, so a caller that loses the race waits for the winner and then succeeds.
+
 ## [0.5.2] - 2026-08-31
 
 Chore: update dependencies.
