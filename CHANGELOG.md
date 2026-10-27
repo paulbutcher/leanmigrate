@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.7.0] - 2026-10-27
+
+Migrations may be read from directories in addition to `dir`, through `Config.includeDirs`, so an application can apply a library's migrations alongside its own.
 
 ## [0.6.1] - 2026-10-20
 
