@@ -133,6 +133,20 @@ public def scenarioFailureMidBatchAborts [SqlBackend Conn] (conn : Conn) (dir : 
   check "only the migration before the failure is committed" (applied == #["00000001"])
   check "the migration after the failure never ran" !(← tableExists conn "widget_00000003")
 
+/-- The CLI applies and rolls back an included directory's migrations together with the
+application's, in id order across both. -/
+public def scenarioCliIncludedDirs [SqlBackend Conn] (conn : Conn) (dir : System.FilePath) :
+    IO Unit := do
+  discard <| writeMigrations (dir / "app") #["00000002", "00000004"]
+  discard <| writeMigrations (dir / "lib") #["00000001", "00000003"]
+  let cfg : Config Conn := { conn, dir := dir / "app", includeDirs := [dir / "lib"] }
+  check "included dirs: migrate succeeds" ((← runCli cfg ["migrate"]) == 0)
+  check "included dirs: both directories applied, interleaved by id"
+    ((← appliedIds conn) == #["00000001", "00000002", "00000003", "00000004"])
+  check "included dirs: rollback succeeds" ((← runCli cfg ["rollback", "2"]) == 0)
+  check "included dirs: rollback reaches the included directory's migrations"
+    ((← appliedIds conn) == #["00000001", "00000002"] && !(← tableExists conn "widget_00000003"))
+
 /-- Two callers running `migrateUp` at once against one database apply every migration exactly
 once, and both return successfully. -/
 public def scenarioConcurrentUp [SqlBackend Conn] (newConn : IO Conn) (dir : System.FilePath) :

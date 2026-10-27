@@ -39,6 +39,7 @@ public def main : IO UInt32 := do
   withFreshSchema "pgidempotent" (single scenarioIdempotentRerun)
   withFreshSchema "pgfailureaborts" (single scenarioFailureMidBatchAborts)
   withFreshSchema "pgmultistatement" (single scenarioMultiStatementFile)
+  withFreshSchema "pgcliincludeddirs" (single scenarioCliIncludedDirs)
   withFreshSchema "pgconcurrent" scenarioConcurrentUp
   withFreshSchema "pgloserrunsnothing" scenarioLoserRunsNothing
   report "PostgresTests"

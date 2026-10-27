@@ -51,6 +51,24 @@ public def discoverMigrations (dir : System.FilePath) : IO (Array Migration) := 
     | none => throw <| IO.userError s!"migration {id}_{name}.up.sql has no matching down.sql"
   return result.qsort (·.id < ·.id)
 
+/-- Discovers the migrations in `dir` and in each of `includeDirs`, merged into one sequence
+sorted ascending by id. Unlike a missing `dir`, a missing included directory is an error: it
+belongs to a dependency, so its absence means a broken build rather than a fresh project. So is
+an id found twice, since bookkeeping keyed on the id would apply it once while appearing to be
+two. -/
+public def discoverAllMigrations (dir : System.FilePath) (includeDirs : List System.FilePath) :
+    IO (Array Migration) := do
+  let mut all ← discoverMigrations dir
+  for d in includeDirs do
+    if !(← d.isDir) then
+      throw <| IO.userError s!"included migrations directory {d} does not exist"
+    all := all ++ (← discoverMigrations d)
+  let sorted := all.qsort (·.id < ·.id)
+  for (a, b) in sorted.zip (sorted.extract 1) do
+    if a.id == b.id then
+      throw <| IO.userError s!"migration id {a.id} is used by both {a.up} and {b.up}"
+  return sorted
+
 public def pad (width : Nat) (n : Int) : String :=
   String.ofList (List.leftpad width '0' (toString n.toNat).toList)
 

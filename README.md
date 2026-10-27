@@ -68,6 +68,16 @@ lake exe migrate pending            # lists migrations not yet applied
 
 Applying a migration records its id in a `schema_migrations` bookkeeping table and runs its `up.sql`, in a single transaction, so a migration that fails is never left half-applied. Migrations run in ascending id order; a run stops at the first failure, leaving everything before it applied and everything from it onward untouched.
 
+## Migrations from a library
+
+If a library you depend on ships its own migrations, name its directory in `includeDirs` rather than copying its files into yours, so that a version bump which adds a migration is applied along with it:
+
+```lean
+runCli { conn, dir := "migrations", includeDirs := [".lake/packages/somelib/migrations"] } args
+```
+
+Every directory is merged into one sequence in id order, and every command works over that sequence. `dir` stays the only one `create` writes to. A missing `dir` holds no migrations, but a missing included directory is an error, as is an id found in more than one directory.
+
 ## Concurrency
 
 `migrate` is safe to run from several processes at once against one database, so a deployment with several services needn't arrange for exactly one of them to run it. A migration's bookkeeping row goes in before the migration itself, and its id is the primary key, so it doubles as a claim: concurrent callers between them apply each pending migration exactly once, and one that loses a race waits for the winner and then returns successfully, having run none of the migration.

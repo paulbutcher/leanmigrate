@@ -26,6 +26,7 @@ public def main : IO UInt32 := do
   withFreshDb "sqlite-idempotent" (single scenarioIdempotentRerun)
   withFreshDb "sqlite-failure-aborts" (single scenarioFailureMidBatchAborts)
   withFreshDb "sqlite-multistatement" (single scenarioMultiStatementFile)
+  withFreshDb "sqlite-cli-included-dirs" (single scenarioCliIncludedDirs)
   withFreshDb "sqlite-concurrent" scenarioConcurrentUp
   withFreshDb "sqlite-loser-runs-nothing" scenarioLoserRunsNothing
   report "SqliteTests"

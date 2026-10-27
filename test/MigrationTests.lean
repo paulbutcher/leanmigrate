@@ -41,6 +41,45 @@ def testMissingDirIsEmpty : IO Unit := do
   let migrations ← discoverMigrations "/tmp/leanmigrate-test-does-not-exist"
   check "a missing migrations directory yields no migrations" (migrations.isEmpty)
 
+def touchPair (dir : System.FilePath) (id : String) : IO Unit := do
+  touch (dir / s!"{id}_m{id}.up.sql")
+  touch (dir / s!"{id}_m{id}.down.sql")
+
+def testIncludedDirsInterleave : IO Unit := do
+  let root ← freshTempDir "include-interleave"
+  let app := root / "app"
+  let lib := root / "lib"
+  IO.FS.createDirAll app
+  IO.FS.createDirAll lib
+  touchPair app "00000002"
+  touchPair app "00000004"
+  touchPair lib "00000001"
+  touchPair lib "00000003"
+  let migrations ← discoverAllMigrations app [lib]
+  check "included migrations interleave with the application's by id"
+    (migrations.map (·.id) == #["00000001", "00000002", "00000003", "00000004"])
+  let fromLibOnly ← discoverAllMigrations (root / "absent") [lib]
+  check "a missing application directory still holds nothing"
+    (fromLibOnly.map (·.id) == #["00000001", "00000003"])
+  IO.FS.removeDirAll root
+
+def testMissingIncludedDirErrors : IO Unit := do
+  let dir ← freshTempDir "include-missing"
+  checkThrows "a missing included directory errors"
+    (discoverAllMigrations dir [dir / "absent"])
+  IO.FS.removeDirAll dir
+
+def testDuplicateIdAcrossDirsErrors : IO Unit := do
+  let root ← freshTempDir "include-duplicate"
+  let app := root / "app"
+  let lib := root / "lib"
+  IO.FS.createDirAll app
+  IO.FS.createDirAll lib
+  touchPair app "00000001"
+  touchPair lib "00000001"
+  checkThrows "an id found in two directories errors" (discoverAllMigrations app [lib])
+  IO.FS.removeDirAll root
+
 def testCreateMigration : IO Unit := do
   let dir ← freshTempDir "create"
   let m ← createMigration dir "Add Users!"
@@ -56,5 +95,8 @@ public def main : IO UInt32 := do
   testMissingDownErrors
   testUnrelatedFilesIgnored
   testMissingDirIsEmpty
+  testIncludedDirsInterleave
+  testMissingIncludedDirErrors
+  testDuplicateIdAcrossDirsErrors
   testCreateMigration
   report "MigrationTests"

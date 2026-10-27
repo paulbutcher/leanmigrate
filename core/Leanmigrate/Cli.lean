@@ -42,15 +42,15 @@ public def runCli [SqlBackend Conn] (cfg : Config Conn) (args : List String) : I
       IO.println s!"created {m.up} and {m.down}"
       return 0
     | "migrate" :: rest | "up" :: rest =>
-      let all ← discoverMigrations cfg.dir
+      let all ← discoverAllMigrations cfg.dir cfg.includeDirs
       migrateUp cfg.conn all rest.head?
       return 0
     | "rollback" :: rest | "down" :: rest =>
-      let all ← discoverMigrations cfg.dir
+      let all ← discoverAllMigrations cfg.dir cfg.includeDirs
       runRollback cfg.conn all rest.head?
       return 0
     | ["pending"] | ["status"] =>
-      let all ← discoverMigrations cfg.dir
+      let all ← discoverAllMigrations cfg.dir cfg.includeDirs
       let todo ← pendingMigrations cfg.conn all
       if todo.isEmpty then
         IO.println "up to date"
