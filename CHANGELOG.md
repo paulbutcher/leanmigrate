@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.0] - 2026-11-23
+
+Breaking: move to Lean `v4.36.0`; consumers must use the `leanprover/lean4:v4.36.0` toolchain.
+
 ## [0.7.0] - 2026-10-27
 
 Migrations may be read from directories in addition to `dir`, through `Config.includeDirs`, so an application can apply a library's migrations alongside its own.
