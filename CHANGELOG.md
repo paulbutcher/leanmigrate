@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.0] - 2026-11-24
+
+Breaking: `leanmigratePostgres` moves to leanpostgres 0.9.0 and lean-json 0.4.0; consumers that require either directly must move to those releases.
+
 ## [0.8.0] - 2026-11-23
 
 Breaking: move to Lean `v4.36.0`; consumers must use the `leanprover/lean4:v4.36.0` toolchain.
